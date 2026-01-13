@@ -35,6 +35,17 @@ const buttonVariants = cva(
   }
 );
 
+/**
+ * Styled button component that renders either a native button or a Slot-compatible child.
+ *
+ * Renders a button element styled according to the selected `variant` and `size`, or renders the passed child component when `asChild` is true.
+ *
+ * @param className - Additional CSS classes to append to the component's computed classes.
+ * @param variant - Visual variant to apply (e.g., "default", "destructive", "outline", "secondary", "ghost", "link", "brand").
+ * @param size - Size variant to apply (e.g., "default", "sm", "lg", "icon", "icon-sm", "icon-lg").
+ * @param asChild - When true, renders the component's child via a Slot instead of a native `button`.
+ * @returns The rendered button element or the provided child component when `asChild` is enabled.
+ */
 function Button({
   className,
   variant = "default",

@@ -3,6 +3,13 @@ import Image from "next/image";
 import UserButton from "../auth/components/user-button";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 
+/**
+ * Render a sticky, responsive header bar containing the site logo, navigation links, theme toggle, and user account controls.
+ *
+ * The header adapts between desktop and mobile layouts, shows desktop navigation and right-aligned controls on larger screens, and a compact set of links plus controls on small screens.
+ *
+ * @returns A JSX element representing the header bar
+ */
 export function Header() {
   return (
     <>

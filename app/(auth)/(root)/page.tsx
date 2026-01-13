@@ -2,6 +2,11 @@ import { Button } from "@/components/ui/button";
 import { ArrowUpRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+/**
+ * Render the home page hero section containing a hero image, gradient-styled title, descriptive blurb, and a call-to-action button linking to `/dashboard`.
+ *
+ * @returns The JSX element for the home page hero section.
+ */
 export default function Home() {
   return (
     <div className=" z-20 flex flex-col items-center justify-start min-h-screen py-2 mt-10">
