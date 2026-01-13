@@ -1,0 +1,28 @@
+<svg width="200" height="100" viewBox="0 0 200 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="paint0_linear" x1="40" y1="25" x2="170" y2="75" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#334155"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Car Body Outline -->
+  <path d="M50 64H58.5C60 64 61.5 65 62.5 66.5C64 69 66.5 71 70 71C73.5 71 76 69 77.5 66.5C78.5 65 80 64 81.5 64H122.5C124 64 125.5 65 126.5 66.5C128 69 130.5 71 134 71C137.5 71 140 69 141.5 66.5C142.5 65 144 64 145.5 64H155C160.523 64 165 59.5228 165 54V50C165 44.4772 160.523 40 155 40H135L115 26H75L65 40H45C39.4772 40 35 44.4772 35 50V54C35 59.5228 39.4772 64 45 64" 
+        stroke="#0f172a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" class="stroke-zinc-900 dark:stroke-white"/>
+        
+  <!-- Wheels -->
+  <circle cx="70" cy="65" r="9" stroke="#0f172a" stroke-width="4" class="stroke-zinc-900 dark:stroke-white"/>
+  <circle cx="134" cy="65" r="9" stroke="#0f172a" stroke-width="4" class="stroke-zinc-900 dark:stroke-white"/>
+
+  <!-- Speed Lines -->
+  <path d="M10 52H25" stroke="#0f172a" stroke-width="4" stroke-linecap="round" class="stroke-zinc-900 dark:stroke-white"/>
+  <path d="M15 62H30" stroke="#0f172a" stroke-width="4" stroke-linecap="round" class="stroke-zinc-900 dark:stroke-white"/>
+  <path d="M5 42H20" stroke="#0f172a" stroke-width="4" stroke-linecap="round" class="stroke-zinc-900 dark:stroke-white"/>
+  
+  <!-- Code Brackets -->
+  <g transform="translate(86, 40)">
+    <path d="M8 8L3 15L8 22" stroke="#06b6d4" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M22 8L27 15L22 22" stroke="#06b6d4" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M19 6L11 24" stroke="#06b6d4" stroke-width="4" stroke-linecap="round"/>
+  </g>
+</svg>
