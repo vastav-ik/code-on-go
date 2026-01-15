@@ -34,21 +34,12 @@ export function Header() {
                     <div className="relative">
                       <div className="absolute -inset-1 bg-green-500/20 rounded-lg blur-sm group-hover:bg-green-500/30 transition-all duration-300" />
                       <Image
-                        src={"/logo.svg"}
-                        alt="Logo"
+                        src={"/text-logo.svg"}
+                        alt="CodeOnGo Logo"
                         height={40}
-                        width={80}
-                        className="relative z-10"
+                        width={150}
+                        className="relative z-10 dark:invert"
                       />
-                    </div>
-
-                    <div className="hidden sm:flex flex-col gap-0.5">
-                      <span className="font-mono font-bold text-lg tracking-tight flex items-center gap-2">
-                        <span className="text-green-600 dark:text-green-400">
-                          &gt;_
-                        </span>
-                        Code On Go
-                      </span>
                     </div>
                   </Link>
                   <span className="text-zinc-300 dark:text-zinc-700">|</span>
