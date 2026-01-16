@@ -10,6 +10,12 @@ export const metadata = {
   },
 };
 
+/**
+ * Layout component that renders the page header, background, main content area, and footer.
+ *
+ * @param children - Content to be rendered inside the layout's main content area.
+ * @returns The composed layout element containing Header, HybridBackground, the `main` wrapper with `children`, and Footer.
+ */
 export default function HomeLayout({
   children,
 }: {

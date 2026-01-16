@@ -3,6 +3,13 @@
 import { motion } from "framer-motion";
 import React, { useEffect, useState } from "react";
 
+/**
+ * Renders a full-viewport decorative animated background composed of soft animated gradients, a subtle grid, retro scanlines, and vignette overlays.
+ *
+ * The component returns `null` until it is mounted to avoid server-side rendering hydration mismatches.
+ *
+ * @returns The background JSX element when mounted, or `null` before mounting.
+ */
 export function HybridBackground() {
   const [mounted, setMounted] = useState(false);
 

@@ -4,6 +4,13 @@ import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
 
+/**
+ * Toggle UI control that switches the application's theme between light and dark.
+ *
+ * Renders nothing during server-side rendering and until the component mounts on the client to avoid hydration mismatches.
+ *
+ * @returns The clickable theme toggle element: a Moon icon when the current theme is `light`, a Sun icon when the theme is `dark`, or `null` before mount.
+ */
 export function ThemeToggle() {
   const { setTheme, theme } = useTheme();
   const [mounted, setMounted] = useState(false);

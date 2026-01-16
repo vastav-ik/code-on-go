@@ -1,6 +1,14 @@
 import Link from "next/link";
 import { Github as LucideGithub } from "lucide-react";
 
+/**
+ * Render the site footer containing social links and a copyright notice.
+ *
+ * Renders a top-bordered footer with centered layout: a row of social link icons (each opening in a new tab)
+ * and a copyright line displaying the current year and "Codesnippet. All rights reserved."
+ *
+ * @returns A JSX element representing the footer
+ */
 export function Footer() {
   const socialLinks = [
     {
