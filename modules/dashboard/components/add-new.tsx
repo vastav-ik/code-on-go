@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Templates } from "@prisma/client";
 import { createPlayground } from "../actions";
+import { CreatePlaygroundRequest } from "../types";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import TemplateSelectingModal from "./template-selecting-modal";
@@ -15,18 +16,18 @@ const AddNew = ({ children }: AddNewProps) => {
   const [open, setOpen] = useState(false);
   const router = useRouter();
 
-  const handleCreate = async (data: {
-    title: string;
-    template: Templates;
-    description: string;
-  }) => {
-    const res = await createPlayground(data.title, data.template);
+  const handleCreate = async (data: CreatePlaygroundRequest) => {
+    const res = await createPlayground(
+      data.title,
+      data.template,
+      data.description
+    );
     if (res?.success) {
-      toast.success("Playground created successfully");
+      toast.success("Project created successfully");
       setOpen(false);
       router.push(`/editor/${res.playgroundId}`);
     } else {
-      toast.error("Failed to create playground");
+      toast.error(res?.error || "Failed to create project");
     }
   };
 

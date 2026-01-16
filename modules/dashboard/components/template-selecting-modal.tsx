@@ -77,7 +77,7 @@ const TEMPLATE_OPTIONS: TemplateOption[] = [
     name: "Angular",
     description: "The modern web developer's platform",
     icon: "/angular.svg",
-    category: "frontend", // Or fullstack based on user transcript, keeping frontend for now as per data structure logic
+    category: "frontend",
     tags: ["frontend", "framework", "typescript"],
   },
   {
