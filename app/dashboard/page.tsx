@@ -1,7 +1,13 @@
 import React from "react";
 import EmptyState from "@/modules/dashboard/components/empty-state";
 import { DashboardActions } from "@/modules/dashboard/components/dashboard-actions";
-import { getAllPlaygrounds } from "@/modules/dashboard/actions";
+import {
+  getAllPlaygrounds,
+  deletePlayground,
+  updatePlayground,
+  duplicatePlayground,
+  toggleProjectStar,
+} from "@/modules/dashboard/actions";
 import ProjectTable from "@/modules/dashboard/components/project-table";
 
 const page = async () => {
@@ -15,7 +21,13 @@ const page = async () => {
 
       <div className="w-full flex-1 overflow-auto">
         {playgrounds && playgrounds.length > 0 ? (
-          <ProjectTable projects={playgrounds} />
+          <ProjectTable
+            projects={playgrounds || []}
+            onDuplicateProject={duplicatePlayground}
+            onDeleteProject={deletePlayground}
+            onUpdateProject={updatePlayground}
+            onMarkasFavorite={toggleProjectStar}
+          />
         ) : (
           <EmptyState />
         )}

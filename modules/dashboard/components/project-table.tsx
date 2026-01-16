@@ -59,16 +59,29 @@ interface ProjectTableProps {
   projects: Project[];
   onUpdateProject?: (
     id: string,
-    data: { title: string; description: string }
-  ) => Promise<void>;
-  onDeleteProject?: (id: string) => Promise<void>;
-  onDuplicateProject?: (id: string) => Promise<void>;
-  onMarkasFavorite?: (id: string) => Promise<void>;
+    title: string,
+    description: string
+  ) => Promise<any>;
+  onDeleteProject?: (id: string) => Promise<any>;
+  onDuplicateProject?: (id: string) => Promise<any>;
+  onMarkasFavorite?: (id: string) => Promise<any>;
 }
 
 interface EditProjectData {
   title: string;
   description: string;
+}
+
+interface ProjectTableProps {
+  projects: Project[];
+  onUpdateProject?: (
+    id: string,
+    title: string,
+    description: string
+  ) => Promise<any>;
+  onDeleteProject?: (id: string) => Promise<any>;
+  onDuplicateProject?: (id: string) => Promise<any>;
+  onMarkasFavorite?: (id: string) => Promise<any>;
 }
 
 export default function ProjectTable({
@@ -105,7 +118,11 @@ export default function ProjectTable({
     if (!selectedProject || !onUpdateProject) return;
     setIsLoading(true);
     try {
-      await onUpdateProject(selectedProject.id, editData);
+      await onUpdateProject(
+        selectedProject.id,
+        editData.title,
+        editData.description
+      );
       toast.success("Project updated successfully");
       setEditDialogOpen(false);
     } catch (error) {
@@ -183,7 +200,13 @@ export default function ProjectTable({
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  {format(new Date(project.createdAt), "MMM d, yyyy")}
+                  {(() => {
+                    try {
+                      return format(new Date(project.createdAt), "MMM d, yyyy");
+                    } catch (e) {
+                      return "Invalid Date";
+                    }
+                  })()}
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
@@ -214,6 +237,7 @@ export default function ProjectTable({
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8 text-muted-foreground hover:text-primary"
+                        suppressHydrationWarning
                       >
                         <MoreHorizontal className="h-4 w-4" />
                         <span className="sr-only">Open menu</span>
@@ -228,6 +252,7 @@ export default function ProjectTable({
                             project.Starmark[0]?.isMarked
                           }
                           id={project.id}
+                          onMarkasFavorite={onMarkasFavorite}
                         />
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
@@ -346,7 +371,6 @@ export default function ProjectTable({
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
