@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/db";
 import { currentUser } from "@/modules/auth";
 import { revalidatePath } from "next/cache";
+import { STARTER_TEMPLATES } from "../data/templates";
 
 export const getAllPlaygrounds = async () => {
   const user = await currentUser();
@@ -37,13 +38,23 @@ export const createPlayground = async (
   }
 
   try {
+    const playgroundId = crypto.randomUUID();
     const playground = await prisma.playground.create({
       data: {
+        id: playgroundId,
         title,
         template,
         description,
         code: `// Welcome to your new ${template} playground!`,
         userId: user.id!,
+        templateFiles: {
+          create: STARTER_TEMPLATES[template].map((file) => ({
+            name: file.name,
+            content: file.content,
+            template,
+            templateId: playgroundId,
+          })),
+        },
       },
     });
     return { success: true, playgroundId: playground.id };

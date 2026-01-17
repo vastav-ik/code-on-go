@@ -71,17 +71,27 @@ model Playground{
   Starmark StarMark[]
   userId String @map("user_id")
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  templateFile TemplateFile?
 }
 
 model StarMark {
-  id String @id @default(cuid()) @map("_id")
-  userId String @map("user_id")
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  playgroundId String 
-  isMarked Boolean @default(false)
-  playground Playground @relation(fields: [playgroundId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
- 
+  id           String     @id @default(cuid()) @map("_id")
+  userId       String     @map("user_id")
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  playgroundId String
+  playground   Playground @relation(fields: [playgroundId], references: [id], onDelete: Cascade)
+  isMarked     Boolean    @default(false)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
   @@unique([userId, playgroundId])
+}
+
+model TemplateFile {
+  id           String     @id @default(cuid()) @map("_id")
+  content      String
+  playgroundId String     @unique
+  playground   Playground @relation(fields: [playgroundId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 }
