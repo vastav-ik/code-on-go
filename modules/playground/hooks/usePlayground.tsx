@@ -20,12 +20,12 @@ interface UsePlaygroundReturn {
   isLoading: boolean;
   error: string | null;
   loadPlayground: (id: string) => Promise<void>;
-  saveTemplateData: (id: string, data: TemplateFolder) => Promise<void>;
+  saveTemplateData: (data: TemplateFolder) => Promise<void>;
 }
 
 export const usePlayground = (id: string): UsePlaygroundReturn => {
   const [playgroundData, setPlaygroundData] = useState<PlaygroundData | null>(
-    null
+    null,
   );
   const [templateData, setTemplateData] = useState<
     (TemplateFile | TemplateFolder)[] | null
@@ -110,9 +110,9 @@ export const usePlayground = (id: string): UsePlaygroundReturn => {
   }, []);
 
   const saveTemplateDataFn = useCallback(
-    async (playgroundId: string, data: any) => {
+    async (data: any) => {
       try {
-        const res = await saveUpdatedCode(playgroundId, data);
+        const res = await saveUpdatedCode(id, data);
         if (res.success) {
           toast.success("Saved successfully");
         } else {
@@ -122,7 +122,7 @@ export const usePlayground = (id: string): UsePlaygroundReturn => {
         toast.error("Error saving");
       }
     },
-    []
+    [id],
   );
 
   useEffect(() => {

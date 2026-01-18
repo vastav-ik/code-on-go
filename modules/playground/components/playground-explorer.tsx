@@ -39,6 +39,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { TemplateFile, TemplateFolder } from "../lib/path-to-json";
+import { buildFileId } from "../lib";
 import { NewFileDialog } from "./dialogs/new-file-dialog";
 import { NewFolderDialog } from "./dialogs/new-folder-dialog";
 import { RenameFileDialog } from "./dialogs/rename-file-dialog";
@@ -47,17 +48,36 @@ import { DeleteDialog } from "./dialogs/delete-dialog";
 
 interface PlaygroundExplorerProps {
   data: (TemplateFile | TemplateFolder)[] | null;
-  onFileSelect?: (file: TemplateFile) => void;
-  // In a real app, these would be connected to backend mutations
-  onNewFile?: (folderPath: string, name: string) => void;
-  onNewFolder?: (folderPath: string, name: string) => void;
-  onRename?: (path: string, newName: string, type: "file" | "folder") => void;
-  onDelete?: (path: string, type: "file" | "folder") => void;
+  onFileSelect?: (file: TemplateFile & { id: string }) => void;
+  onAddFile?: (newFile: TemplateFile, parentPath: string) => void;
+  onAddFolder?: (newFolder: TemplateFolder, parentPath: string) => void;
+  onDeleteFile?: (file: TemplateFile, parentPath: string) => void;
+  onDeleteFolder?: (folder: TemplateFolder, parentPath: string) => void;
+  onRenameFile?: (
+    file: TemplateFile,
+    newFilename: string,
+    parentPath: string,
+  ) => void;
+  onRenameFolder?: (
+    folder: TemplateFolder,
+    newFolderName: string,
+    parentPath: string,
+  ) => void;
+  title?: string;
+  selectedFile?: any;
 }
 
-export function PlaygroundExplorer({
+export function TemplateFileTree({
   data,
   onFileSelect,
+  onAddFile,
+  onAddFolder,
+  onDeleteFile,
+  onDeleteFolder,
+  onRenameFile,
+  onRenameFolder,
+  title,
+  selectedFile,
 }: PlaygroundExplorerProps) {
   // Global Dialog States
   const [newFileOpen, setNewFileOpen] = useState(false);
@@ -68,12 +88,10 @@ export function PlaygroundExplorer({
 
   // Track context for the action
   const [activePath, setActivePath] = useState<string>("");
-  const [activeName, setActiveName] = useState<string>(""); // For rename initial value
+  const [activeName, setActiveName] = useState<string>("");
 
-  // Mock handlers for the dialogs - in real app, these bubble up
   const handleCreateFile = (name: string) => {
     console.log(`Create file ${name} in ${activePath}`);
-    // logic would go here
   };
 
   const handleCreateFolder = (name: string) => {
@@ -88,7 +106,6 @@ export function PlaygroundExplorer({
     console.log(`Delete ${activePath}`);
   };
 
-  // Helper to open dialogs from nodes
   const openDialog = (
     type:
       | "new-file"
@@ -97,7 +114,7 @@ export function PlaygroundExplorer({
       | "rename-folder"
       | "delete",
     path: string,
-    name?: string
+    name?: string,
   ) => {
     setActivePath(path);
     if (name) setActiveName(name);
@@ -187,7 +204,7 @@ interface TemplateNodeProps {
   item: TemplateFile | TemplateFolder;
   level: number;
   parentPath: string;
-  onFileSelect?: (file: TemplateFile) => void;
+  onFileSelect?: (file: TemplateFile & { id: string }) => void;
   openDialog: (type: any, path: string, name?: string) => void;
 }
 
@@ -198,9 +215,8 @@ function TemplateNode({
   onFileSelect,
   openDialog,
 }: TemplateNodeProps) {
-  const currentPath = parentPath
-    ? `${parentPath}/${item.name || (item as any).folderName}`
-    : item.name || (item as any).folderName;
+  const itemName = item.type === "file" ? item.name : item.folderName;
+  const currentPath = buildFileId(parentPath, itemName);
 
   // Folder Rendering
   if (item.type === "folder") {
@@ -244,7 +260,7 @@ function TemplateNode({
                       openDialog(
                         "rename-folder",
                         currentPath,
-                        folder.folderName
+                        folder.folderName,
                       );
                     }}
                   >
@@ -287,7 +303,7 @@ function TemplateNode({
   return (
     <SidebarMenuItem>
       <SidebarMenuButton
-        onClick={() => onFileSelect?.(file)}
+        onClick={() => onFileSelect?.({ ...file, id: currentPath })}
         className="group/file"
       >
         <FileIcon className="mr-2 h-4 w-4" />
