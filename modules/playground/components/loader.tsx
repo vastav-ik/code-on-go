@@ -1,37 +1,58 @@
 import React from "react";
-import { Loader2, CheckCircle2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 interface LoadingStepProps {
-  step: number;
   currentStep: number;
+  step: number;
   label: string;
 }
-
 const LoadingStep: React.FC<LoadingStepProps> = ({
-  step,
   currentStep,
+  step,
   label,
-}) => {
-  return (
-    <div className="flex items-center gap-3 py-2">
-      {step < currentStep ? (
-        <CheckCircle2 className="h-5 w-5 text-green-500" />
-      ) : step === currentStep ? (
-        <Loader2 className="h-5 w-5 animate-spin text-primary" />
+}) => (
+  <div className="flex items-center gap-2 mb-2">
+    <div
+      className={`rounded-full p-1 ${
+        currentStep === step
+          ? "bg-red-100"
+          : currentStep > step
+            ? "bg-green-100"
+            : "bg-gray-100"
+      }`}
+    >
+      {currentStep > step ? (
+        <svg
+          className="h-4 w-4 text-green-500"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M5 13l4 4L19 7"
+          />
+        </svg>
+      ) : currentStep === step ? (
+        <Loader2 className="h-4 w-4 text-red-500 animate-spin" />
       ) : (
-        <div className="h-5 w-5 rounded-full border-2 border-muted" />
+        <div className="h-4 w-4 rounded-full bg-gray-300" />
       )}
-      <span
-        className={
-          step === currentStep
-            ? "font-medium text-foreground"
-            : "text-muted-foreground"
-        }
-      >
-        {label}
-      </span>
     </div>
-  );
-};
+    <span
+      className={`text-sm ${
+        currentStep === step
+          ? "text-red-600 font-medium"
+          : currentStep > step
+            ? "text-green-600"
+            : "text-gray-500"
+      }`}
+    >
+      {label}
+    </span>
+  </div>
+);
 
 export default LoadingStep;

@@ -30,7 +30,7 @@ export const getAllPlaygrounds = async () => {
 export const createPlayground = async (
   title: string,
   template: "REACT" | "NEXTJS" | "EXPRESS" | "VUE" | "HONO" | "ANGULAR",
-  description: string
+  description: string,
 ) => {
   const user = await currentUser();
   if (!user) {
@@ -47,13 +47,10 @@ export const createPlayground = async (
         description,
         code: `// Welcome to your new ${template} playground!`,
         userId: user.id!,
-        templateFiles: {
-          create: STARTER_TEMPLATES[template].map((file) => ({
-            name: file.name,
-            content: file.content,
-            template,
-            templateId: playgroundId,
-          })),
+        templateFile: {
+          create: {
+            content: JSON.stringify(STARTER_TEMPLATES[template]),
+          },
         },
       },
     });
@@ -87,7 +84,7 @@ export const deletePlayground = async (playgroundId: string) => {
 export const updatePlayground = async (
   playgroundId: string,
   title: string,
-  description: string
+  description: string,
 ) => {
   const user = await currentUser();
   if (!user) {

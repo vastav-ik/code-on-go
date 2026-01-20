@@ -41,6 +41,11 @@ const TerminalComponent = forwardRef<TerminalRef, TerminalProps>(
     const term = useRef<Terminal | null>(null);
     const fitAddon = useRef<FitAddon | null>(null);
     const searchAddon = useRef<SearchAddon | null>(null);
+
+    // Lazy init state
+    const pendingOutput = useRef<string[]>([]);
+    const initializedRef = useRef(false);
+
     const [isConnected, setIsConnected] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
     const [showSearch, setShowSearch] = useState(false);
@@ -115,10 +120,15 @@ const TerminalComponent = forwardRef<TerminalRef, TerminalProps>(
       writeToTerminal: (data: string) => {
         if (term.current) {
           term.current.write(data);
+        } else {
+          pendingOutput.current.push(data);
         }
       },
       clearTerminal: () => {
-        clearTerminal();
+        if (term.current) {
+          term.current.clear();
+          writePrompt();
+        }
       },
       focusTerminal: () => {
         if (term.current) {
@@ -295,8 +305,20 @@ const TerminalComponent = forwardRef<TerminalRef, TerminalProps>(
       [executeCommand, writePrompt],
     );
 
-    const initializeTerminal = useCallback(() => {
-      if (!terminalRef.current || term.current) return;
+    const initXterm = useCallback(() => {
+      // Prevent double init
+      if (!terminalRef.current || term.current || initializedRef.current)
+        return;
+
+      // Only initialize if we have dimensions (prevents crash)
+      if (
+        terminalRef.current.clientWidth === 0 ||
+        terminalRef.current.clientHeight === 0
+      ) {
+        return;
+      }
+
+      initializedRef.current = true;
 
       const terminal = new Terminal({
         cursorBlink: true,
@@ -311,7 +333,6 @@ const TerminalComponent = forwardRef<TerminalRef, TerminalProps>(
         tabStopWidth: 4,
       });
 
-      // Add addons
       const fitAddonInstance = new FitAddon();
       const webLinksAddon = new WebLinksAddon();
       const searchAddonInstance = new SearchAddon();
@@ -326,21 +347,69 @@ const TerminalComponent = forwardRef<TerminalRef, TerminalProps>(
       searchAddon.current = searchAddonInstance;
       term.current = terminal;
 
-      // Handle terminal input
       terminal.onData(handleTerminalInput);
 
-      // Initial fit
-      setTimeout(() => {
-        fitAddonInstance.fit();
-      }, 100);
+      if (
+        terminalRef.current.clientWidth > 0 &&
+        terminalRef.current.clientHeight > 0
+      ) {
+        try {
+          fitAddonInstance.fit();
+        } catch (e) {}
+      }
 
-      // Welcome message
-      terminal.writeln("🚀 WebContainer Terminal");
-      terminal.writeln("Type 'help' for available commands");
-      writePrompt();
+      if (pendingOutput.current.length > 0) {
+        terminal.write(pendingOutput.current.join(""));
+        pendingOutput.current = [];
+      }
 
-      return terminal;
-    }, [theme, handleTerminalInput, writePrompt]);
+      if (!webContainerInstance) {
+        terminal.writeln("🚀 WebContainer Terminal");
+        terminal.writeln("Type 'help' for available commands");
+        writePrompt();
+      } else {
+        writePrompt();
+      }
+    }, [theme, handleTerminalInput, writePrompt, webContainerInstance]);
+
+    useEffect(() => {
+      const resizeObserver = new ResizeObserver(() => {
+        if (!term.current || !fitAddon.current || !terminalRef.current) {
+          if (!initializedRef.current && terminalRef.current) {
+            requestAnimationFrame(() => initXterm());
+          }
+          return;
+        }
+
+        if (
+          terminalRef.current.clientWidth > 0 &&
+          terminalRef.current.clientHeight > 0
+        ) {
+          try {
+            fitAddon.current.fit();
+          } catch (e) {}
+        }
+      });
+
+      if (terminalRef.current) {
+        resizeObserver.observe(terminalRef.current);
+      }
+
+      return () => {
+        resizeObserver.disconnect();
+        if (currentProcess.current) {
+          currentProcess.current.kill();
+        }
+        if (shellProcess.current) {
+          shellProcess.current.kill();
+        }
+        if (term.current) {
+          term.current.dispose();
+          term.current = null;
+        }
+        initializedRef.current = false;
+      };
+    }, [initXterm]);
 
     const connectToWebContainer = useCallback(async () => {
       if (!webContainerInstance || !term.current) return;
@@ -405,37 +474,6 @@ const TerminalComponent = forwardRef<TerminalRef, TerminalProps>(
         searchAddon.current.findNext(term);
       }
     }, []);
-
-    useEffect(() => {
-      initializeTerminal();
-
-      // Handle resize
-      const resizeObserver = new ResizeObserver(() => {
-        if (fitAddon.current) {
-          setTimeout(() => {
-            fitAddon.current?.fit();
-          }, 100);
-        }
-      });
-
-      if (terminalRef.current) {
-        resizeObserver.observe(terminalRef.current);
-      }
-
-      return () => {
-        resizeObserver.disconnect();
-        if (currentProcess.current) {
-          currentProcess.current.kill();
-        }
-        if (shellProcess.current) {
-          shellProcess.current.kill();
-        }
-        if (term.current) {
-          term.current.dispose();
-          term.current = null;
-        }
-      };
-    }, [initializeTerminal]);
 
     useEffect(() => {
       if (webContainerInstance && term.current && !isConnected) {

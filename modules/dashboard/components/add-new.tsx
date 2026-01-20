@@ -20,12 +20,12 @@ const AddNew = ({ children }: AddNewProps) => {
     const res = await createPlayground(
       data.title,
       data.template,
-      data.description
+      data.description,
     );
     if (res?.success) {
       toast.success("Project created successfully");
       setOpen(false);
-      router.push(`/editor/${res.playgroundId}`);
+      router.push(`/playground/${res.playgroundId}`);
     } else {
       toast.error(res?.error || "Failed to create project");
     }

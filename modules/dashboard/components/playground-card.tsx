@@ -21,7 +21,7 @@ const PlaygroundCard = ({ playground }: PlaygroundCardProps) => {
   const Icon = techIconMap[playground.template];
 
   return (
-    <Link href={`/editor/${playground.id}`}>
+    <Link href={`/playground/${playground.id}`}>
       <Card className="hover:border-primary/50 transition-colors cursor-pointer h-full flex flex-col justify-between group">
         <CardHeader className="flex flex-row items-center gap-4 space-y-0">
           <div className="p-2 bg-muted rounded-md group-hover:bg-primary/10 transition-colors">
