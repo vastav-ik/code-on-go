@@ -89,21 +89,51 @@ export function TemplateFileTree({
   // Track context for the action
   const [activePath, setActivePath] = useState<string>("");
   const [activeName, setActiveName] = useState<string>("");
+  const [activeItem, setActiveItem] = useState<
+    TemplateFile | TemplateFolder | undefined
+  >(undefined);
 
   const handleCreateFile = (name: string) => {
-    console.log(`Create file ${name} in ${activePath}`);
+    const newFile: TemplateFile = {
+      name,
+      type: "file",
+      content: "",
+    };
+    onAddFile?.(newFile, activePath);
+    setNewFileOpen(false);
   };
 
   const handleCreateFolder = (name: string) => {
-    console.log(`Create folder ${name} in ${activePath}`);
+    const newFolder: TemplateFolder = {
+      folderName: name,
+      type: "folder",
+      items: [],
+    };
+    onAddFolder?.(newFolder, activePath);
+    setNewFolderOpen(false);
   };
 
   const handleRename = (newName: string) => {
-    console.log(`Rename ${activePath} to ${newName}`);
+    if (!activeItem) return;
+
+    if (activeItem.type === "file") {
+      onRenameFile?.(activeItem as TemplateFile, newName, activePath);
+    } else {
+      onRenameFolder?.(activeItem as TemplateFolder, newName, activePath);
+    }
+    setRenameFileOpen(false);
+    setRenameFolderOpen(false);
   };
 
   const handleDelete = () => {
-    console.log(`Delete ${activePath}`);
+    if (!activeItem) return;
+
+    if (activeItem.type === "file") {
+      onDeleteFile?.(activeItem as TemplateFile, activePath);
+    } else {
+      onDeleteFolder?.(activeItem as TemplateFolder, activePath);
+    }
+    setDeleteOpen(false);
   };
 
   const openDialog = (
@@ -114,10 +144,15 @@ export function TemplateFileTree({
       | "rename-folder"
       | "delete",
     path: string,
-    name?: string,
+    item?: TemplateFile | TemplateFolder,
   ) => {
     setActivePath(path);
-    if (name) setActiveName(name);
+    setActiveItem(item);
+    if (item) {
+      if (item.type === "file") setActiveName(item.name);
+      if (item.type === "folder")
+        setActiveName((item as TemplateFolder).folderName);
+    }
 
     if (type === "new-file") setNewFileOpen(true);
     if (type === "new-folder") setNewFolderOpen(true);
@@ -137,13 +172,13 @@ export function TemplateFileTree({
               <span>EXPLORER</span>
               <div className="flex gap-1">
                 <button
-                  onClick={() => openDialog("new-file", "root")}
+                  onClick={() => openDialog("new-file", "", undefined)}
                   className="hover:bg-muted p-0.5 rounded"
                 >
                   <FilePlus className="h-4 w-4" />
                 </button>
                 <button
-                  onClick={() => openDialog("new-folder", "root")}
+                  onClick={() => openDialog("new-folder", "", undefined)}
                   className="hover:bg-muted p-0.5 rounded"
                 >
                   <FolderPlus className="h-4 w-4" />
@@ -205,7 +240,11 @@ interface TemplateNodeProps {
   level: number;
   parentPath: string;
   onFileSelect?: (file: TemplateFile & { id: string }) => void;
-  openDialog: (type: any, path: string, name?: string) => void;
+  openDialog: (
+    type: any,
+    path: string,
+    item?: TemplateFile | TemplateFolder,
+  ) => void;
 }
 
 function TemplateNode({
@@ -215,7 +254,8 @@ function TemplateNode({
   onFileSelect,
   openDialog,
 }: TemplateNodeProps) {
-  const itemName = item.type === "file" ? item.name : item.folderName;
+  const itemName =
+    (item.type === "file" ? item.name : item.folderName) || "untitled";
   const currentPath = buildFileId(parentPath, itemName);
 
   // Folder Rendering
@@ -240,7 +280,7 @@ function TemplateNode({
                   <DropdownMenuItem
                     onClick={(e) => {
                       e.stopPropagation();
-                      openDialog("new-file", currentPath);
+                      openDialog("new-file", currentPath, undefined);
                     }}
                   >
                     <FilePlus className="mr-2 h-4 w-4" /> New File
@@ -248,7 +288,7 @@ function TemplateNode({
                   <DropdownMenuItem
                     onClick={(e) => {
                       e.stopPropagation();
-                      openDialog("new-folder", currentPath);
+                      openDialog("new-folder", currentPath, undefined);
                     }}
                   >
                     <FolderPlus className="mr-2 h-4 w-4" /> New Folder
@@ -257,11 +297,7 @@ function TemplateNode({
                   <DropdownMenuItem
                     onClick={(e) => {
                       e.stopPropagation();
-                      openDialog(
-                        "rename-folder",
-                        currentPath,
-                        folder.folderName,
-                      );
+                      openDialog("rename-folder", parentPath, folder);
                     }}
                   >
                     <Pencil className="mr-2 h-4 w-4" /> Rename
@@ -270,7 +306,7 @@ function TemplateNode({
                     className="text-red-500"
                     onClick={(e) => {
                       e.stopPropagation();
-                      openDialog("delete", currentPath, folder.folderName);
+                      openDialog("delete", parentPath, folder);
                     }}
                   >
                     <Trash className="mr-2 h-4 w-4" /> Delete
@@ -319,7 +355,7 @@ function TemplateNode({
             <DropdownMenuItem
               onClick={(e) => {
                 e.stopPropagation();
-                openDialog("rename-file", currentPath, file.name);
+                openDialog("rename-file", parentPath, file);
               }}
             >
               <Pencil className="mr-2 h-4 w-4" /> Rename
@@ -328,7 +364,7 @@ function TemplateNode({
               className="text-red-500"
               onClick={(e) => {
                 e.stopPropagation();
-                openDialog("delete", currentPath, file.name);
+                openDialog("delete", parentPath, file);
               }}
             >
               <Trash className="mr-2 h-4 w-4" /> Delete

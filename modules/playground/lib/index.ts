@@ -3,6 +3,10 @@ import { TemplateFile, TemplateFolder } from "./path-to-json";
 export const buildFileId = (path: string, fileName: string) => {
   const normalizedPath = path.replace(/^\/+|\/+$/g, "");
 
+  if (!fileName || typeof fileName !== "string") {
+    return "";
+  }
+
   const cleanFileName = fileName.trim();
   if (!normalizedPath) {
     return cleanFileName;
@@ -14,7 +18,7 @@ export const buildFileId = (path: string, fileName: string) => {
 export function findFilePath(
   file: TemplateFile,
   folder: TemplateFolder,
-  pathSoFar: string[] = []
+  pathSoFar: string[] = [],
 ): string | null {
   for (const item of folder.items) {
     if ("folderName" in item) {
@@ -37,7 +41,7 @@ export function findFilePath(
  */
 export const generateFileId = (
   file: TemplateFile,
-  rootFolder: TemplateFolder
+  rootFolder: TemplateFolder,
 ): string => {
   const path = findFilePath(file, rootFolder)?.replace(/^\/+/, "") || "";
 

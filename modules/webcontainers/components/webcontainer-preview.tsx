@@ -10,7 +10,11 @@ import {
   TemplateFolder,
   TemplateFile,
 } from "@/modules/playground/lib/path-to-json";
-import TerminalComponent from "./terminal";
+import dynamic from "next/dynamic";
+
+const TerminalComponent = dynamic(() => import("./terminal"), {
+  ssr: false,
+});
 
 interface WebContainerPreviewProps {
   templateData: TemplateFolder | (TemplateFile | TemplateFolder)[];
@@ -117,17 +121,57 @@ const WebContainerPreview = ({
           );
         }
 
-        // @ts-ignore
         const files = transformToWebContainerFormat(templateData);
+
+        const pkgNode = files["package.json"];
+        let isInvalidPkg = !pkgNode;
+
+        if (pkgNode && "file" in pkgNode) {
+          const content = pkgNode.file.contents;
+          if (
+            !content ||
+            (typeof content === "string" && content.trim() === "")
+          ) {
+            isInvalidPkg = true;
+          } else if (typeof content === "string") {
+            try {
+              JSON.parse(content);
+            } catch (e) {
+              isInvalidPkg = true;
+            }
+          }
+        }
+
+        if (isInvalidPkg) {
+          files["package.json"] = {
+            file: {
+              contents: JSON.stringify(
+                {
+                  name: "playground-app",
+                  version: "1.0.0",
+                  main: "index.js",
+                  scripts: {
+                    start: "npm install -g serve && serve",
+                    dev: "npm install -g serve && serve",
+                  },
+                  dependencies: {},
+                },
+                null,
+                2,
+              ),
+            },
+          };
+        }
 
         if (terminalRef.current?.writeToTerminal) {
           const fileList = Object.keys(files).join(", ");
           terminalRef.current.writeToTerminal(
             `Generated files: ${fileList}\r\n`,
           );
-          if (!files["package.json"]) {
+
+          if (isInvalidPkg) {
             terminalRef.current.writeToTerminal(
-              "WARNING: package.json is missing from the root!\r\n",
+              "Injecting default package.json...\r\n",
             );
           }
         }
@@ -140,11 +184,29 @@ const WebContainerPreview = ({
         setCurrentStep(2);
 
         if (terminalRef.current?.writeToTerminal) {
-          terminalRef.current.writeToTerminal(
-            "Mounting files to WebContainer...\r\n",
-          );
+          terminalRef.current.writeToTerminal("Mounting files...\r\n");
         }
         await instance.mount(files);
+
+        if (isInvalidPkg) {
+          await instance.fs.writeFile(
+            "package.json",
+            JSON.stringify(
+              {
+                name: "playground-app",
+                version: "1.0.0",
+                main: "index.js",
+                scripts: {
+                  start: "npm install -g serve && serve",
+                  dev: "npm install -g serve && serve",
+                },
+                dependencies: {},
+              },
+              null,
+              2,
+            ),
+          );
+        }
 
         if (terminalRef.current?.writeToTerminal) {
           terminalRef.current.writeToTerminal("Files mounted successfully\r\n");
@@ -161,10 +223,12 @@ const WebContainerPreview = ({
         }
 
         const installProcess = await instance.spawn("npm", ["install"]);
+        let installOutput = "";
 
         installProcess.output.pipeTo(
           new WritableStream({
             write(data) {
+              installOutput += data;
               if (terminalRef.current?.writeToTerminal) {
                 terminalRef.current.writeToTerminal(data);
               }
@@ -175,8 +239,9 @@ const WebContainerPreview = ({
         const installExitCode = await installProcess.exit;
 
         if (installExitCode !== 0) {
+          console.error("Install failed with output:", installOutput);
           throw new Error(
-            `Failed to install dependencies. Exit code: ${installExitCode}`,
+            `Failed to install dependencies (Exit code: ${installExitCode}). \nLogs: ${installOutput.slice(-200)}`,
           );
         }
 

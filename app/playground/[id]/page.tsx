@@ -62,12 +62,18 @@ const MainPlaygroundPage = () => {
   const { id } = useParams<{ id: string }>();
   const [isPreviewVisible, setIsPreviewVisible] = useState(true);
 
-  const { playgroundData, templateData, isLoading, error, saveTemplateData } =
-    usePlayground(id);
+  const {
+    playgroundData,
+    templateData: initialTemplateData,
+    isLoading,
+    error,
+    saveTemplateData,
+  } = usePlayground(id);
 
   const aiSuggestions = useAISuggestions();
 
   const {
+    templateData: explorerData,
     setTemplateData,
     setActiveFileId,
     setPlaygroundId,
@@ -94,7 +100,7 @@ const MainPlaygroundPage = () => {
     instance,
     writeFileSync,
     // @ts-ignore
-  } = useWebContainer({ templateData });
+  } = useWebContainer({ templateData: initialTemplateData });
 
   const lastSyncedContent = useRef<Map<string, string>>(new Map());
 
@@ -103,14 +109,14 @@ const MainPlaygroundPage = () => {
   }, [id, setPlaygroundId]);
 
   useEffect(() => {
-    if (templateData && !openFiles.length) {
+    if (initialTemplateData && !openFiles.length) {
       setTemplateData({
         folderName: "root",
         type: "folder",
-        items: templateData,
+        items: initialTemplateData,
       });
     }
-  }, [templateData, setTemplateData, openFiles.length]);
+  }, [initialTemplateData, setTemplateData, openFiles.length]);
 
   // Create wrapper functions that pass saveTemplateData
   const wrappedHandleAddFile = useCallback(
@@ -322,7 +328,7 @@ const MainPlaygroundPage = () => {
   }
 
   // No template data
-  if (!templateData) {
+  if (!initialTemplateData) {
     return (
       <div className="flex flex-col items-center justify-center h-[calc(100vh-4rem)] p-4">
         <FolderOpen className="h-12 w-12 text-amber-500 mb-4" />
@@ -340,7 +346,7 @@ const MainPlaygroundPage = () => {
     <TooltipProvider>
       <SidebarProvider>
         <TemplateFileTree
-          data={templateData!}
+          data={explorerData ? explorerData.items : initialTemplateData!}
           onFileSelect={handleFileSelect}
           selectedFile={activeFile}
           title="File Explorer"
@@ -505,7 +511,7 @@ const MainPlaygroundPage = () => {
                         <ResizableHandle />
                         <ResizablePanel defaultSize={50}>
                           <WebContainerPreview
-                            templateData={templateData}
+                            templateData={initialTemplateData}
                             instance={instance}
                             writeFileSync={writeFileSync}
                             isLoading={containerLoading}

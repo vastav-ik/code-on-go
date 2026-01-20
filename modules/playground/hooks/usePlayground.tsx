@@ -54,10 +54,10 @@ export const usePlayground = (id: string): UsePlaygroundReturn => {
 
       const existingContent = data.templateFile?.content;
 
-      // SCENARIO 1: DB has content
       if (existingContent && typeof existingContent === "string") {
         try {
           const parsed = JSON.parse(existingContent);
+
           if (parsed.items && Array.isArray(parsed.items)) {
             setTemplateData(parsed.items);
           } else if (Array.isArray(parsed)) {
@@ -66,11 +66,25 @@ export const usePlayground = (id: string): UsePlaygroundReturn => {
             setTemplateData([parsed]);
           }
         } catch (e) {
-          console.error("Failed to parse existing content", e);
-          toast.error("Data corruption error");
+          const templateType = data.template || "JAVASCRIPT";
+          let filename = "index.js";
+
+          if (templateType === "REACT" || templateType === "NEXTJS")
+            filename = "App.js";
+          if (templateType === "VUE") filename = "App.vue";
+          if (templateType === "ANGULAR") filename = "app.component.ts";
+          if (templateType === "HONO") filename = "index.ts";
+
+          const recoveredFile: TemplateFile = {
+            name: filename,
+            type: "file",
+            content: existingContent,
+          };
+
+          setTemplateData([recoveredFile]);
+          toast.info("Restored legacy code format");
         }
       } else {
-        // SCENARIO 2: DB has empty content -> Load from API
         const res = await fetch(`/api/template/${playgroundId}`);
 
         if (!res.ok) {
@@ -81,14 +95,10 @@ export const usePlayground = (id: string): UsePlaygroundReturn => {
 
         if (responseData.templateJson) {
           const rawData = responseData.templateJson;
-
-          // Structure wraps it in root folder if it's an array for consistency
-          // But per transcript, we might want to ensure it matches the TemplateFolder interface
           const formattedData = Array.isArray(rawData) ? rawData : [rawData];
 
           setTemplateData(formattedData);
 
-          // Auto-save to DB
           const rootFolder: TemplateFolder = {
             folderName: "root",
             type: "folder",

@@ -40,7 +40,7 @@ export const getPlaygroundById = async (id: string) => {
 
 export const saveUpdatedCode = async (
   playgroundId: string,
-  data: TemplateFolder
+  data: TemplateFolder,
 ) => {
   try {
     const user = await currentUser();

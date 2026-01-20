@@ -89,6 +89,7 @@ model StarMark {
 
 model TemplateFile {
   id           String     @id @default(cuid()) @map("_id")
+  name         String?
   content      String
   playgroundId String     @unique
   playground   Playground @relation(fields: [playgroundId], references: [id], onDelete: Cascade)
