@@ -26,7 +26,6 @@ export const useWebContainer = ({
   const [error, setError] = useState<string | null>(null);
   const [instance, setInstance] = useState<WebContainer | null>(null);
 
-  // Singleton reference to handling booting status
   const bootPromiseRef = useRef<Promise<WebContainer> | null>(null);
 
   useEffect(() => {
@@ -35,21 +34,6 @@ export const useWebContainer = ({
     async function initializeWebContainer() {
       try {
         let webcontainerInstance: WebContainer;
-
-        // Check if we already have a booted instance in the global scope (if doing that)
-        // OR better, just check if we are already booting.
-        // WebContainer only allows one boot per page load.
-
-        // We can't easily access the internal singleton of WebContainer,
-        // but we can try/catch the boot process or store our own global singleton
-        // if this hook is unmounted and remounted.
-
-        // A simple way to handle strict mode / fast refresh is to reuse the instance
-        // if we can get a handle to it, but WebContainer.boot() doesn't return existing.
-
-        // Let's use a module-level variable for the singleton if possible,
-        // but since we are in a file, we can declare it outside.
-        // See 'globalInstance' below.
 
         if (globalInstance) {
           webcontainerInstance = globalInstance;
@@ -82,8 +66,7 @@ export const useWebContainer = ({
 
     return () => {
       mounted = false;
-      // Do not teardown on unmount, as we want to reuse the singleton across navs
-      // if (instance) instance.teardown();
+      mounted = false;
     };
   }, []);
 

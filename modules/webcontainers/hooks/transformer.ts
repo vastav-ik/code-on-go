@@ -33,7 +33,7 @@ export const transformToWebContainerFormat = (
         directory: folderContent,
       };
     }
-    // Should not happen given the types, but safe fallback
+
     return {
       file: { contents: "" },
     };

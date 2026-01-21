@@ -79,14 +79,12 @@ export function TemplateFileTree({
   title,
   selectedFile,
 }: PlaygroundExplorerProps) {
-  // Global Dialog States
   const [newFileOpen, setNewFileOpen] = useState(false);
   const [newFolderOpen, setNewFolderOpen] = useState(false);
   const [renameFileOpen, setRenameFileOpen] = useState(false);
   const [renameFolderOpen, setRenameFolderOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
-  // Track context for the action
   const [activePath, setActivePath] = useState<string>("");
   const [activeName, setActiveName] = useState<string>("");
   const [activeItem, setActiveItem] = useState<
@@ -258,7 +256,6 @@ function TemplateNode({
     (item.type === "file" ? item.name : item.folderName) || "untitled";
   const currentPath = buildFileId(parentPath, itemName);
 
-  // Folder Rendering
   if (item.type === "folder") {
     const folder = item as TemplateFolder;
     return (
@@ -334,7 +331,6 @@ function TemplateNode({
     );
   }
 
-  // File Rendering
   const file = item as TemplateFile;
   return (
     <SidebarMenuItem>

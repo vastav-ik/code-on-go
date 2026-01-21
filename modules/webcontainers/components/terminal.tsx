@@ -25,7 +25,6 @@ interface TerminalProps {
   webContainerInstance?: any;
 }
 
-// Define the methods that will be exposed through the ref
 export interface TerminalRef {
   writeToTerminal: (data: string) => void;
   clearTerminal: () => void;
@@ -42,7 +41,6 @@ const TerminalComponent = forwardRef<TerminalRef, TerminalProps>(
     const fitAddon = useRef<FitAddon | null>(null);
     const searchAddon = useRef<SearchAddon | null>(null);
 
-    // Lazy init state
     const pendingOutput = useRef<string[]>([]);
     const initializedRef = useRef(false);
 
@@ -50,7 +48,6 @@ const TerminalComponent = forwardRef<TerminalRef, TerminalProps>(
     const [searchTerm, setSearchTerm] = useState("");
     const [showSearch, setShowSearch] = useState(false);
 
-    // Command line state
     const currentLine = useRef<string>("");
     const cursorPosition = useRef<number>(0);
     const commandHistory = useRef<string[]>([]);
@@ -115,7 +112,6 @@ const TerminalComponent = forwardRef<TerminalRef, TerminalProps>(
       }
     }, []);
 
-    // Expose methods through ref
     useImperativeHandle(ref, () => ({
       writeToTerminal: (data: string) => {
         if (term.current) {
@@ -141,7 +137,6 @@ const TerminalComponent = forwardRef<TerminalRef, TerminalProps>(
       async (command: string) => {
         if (!webContainerInstance || !term.current) return;
 
-        // Add to history
         if (
           command.trim() &&
           commandHistory.current[commandHistory.current.length - 1] !== command
@@ -151,7 +146,6 @@ const TerminalComponent = forwardRef<TerminalRef, TerminalProps>(
         historyIndex.current = -1;
 
         try {
-          // Handle built-in commands
           if (command.trim() === "clear") {
             term.current.clear();
             writePrompt();
@@ -171,12 +165,10 @@ const TerminalComponent = forwardRef<TerminalRef, TerminalProps>(
             return;
           }
 
-          // Parse command
           const parts = command.trim().split(" ");
           const cmd = parts[0];
           const args = parts.slice(1);
 
-          // Execute in WebContainer
           term.current.writeln("");
           const process = await webContainerInstance.spawn(cmd, args, {
             terminal: {
@@ -187,7 +179,6 @@ const TerminalComponent = forwardRef<TerminalRef, TerminalProps>(
 
           currentProcess.current = process;
 
-          // Handle process output
           process.output.pipeTo(
             new WritableStream({
               write(data) {
@@ -198,11 +189,9 @@ const TerminalComponent = forwardRef<TerminalRef, TerminalProps>(
             }),
           );
 
-          // Wait for process to complete
           const exitCode = await process.exit;
           currentProcess.current = null;
 
-          // Show new prompt
           writePrompt();
         } catch (error) {
           if (term.current) {
@@ -219,25 +208,23 @@ const TerminalComponent = forwardRef<TerminalRef, TerminalProps>(
       (data: string) => {
         if (!term.current) return;
 
-        // Handle special characters
         switch (data) {
-          case "\r": // Enter
+          case "\r":
             executeCommand(currentLine.current);
             break;
 
-          case "\u007F": // Backspace
+          case "\u007F":
             if (cursorPosition.current > 0) {
               currentLine.current =
                 currentLine.current.slice(0, cursorPosition.current - 1) +
                 currentLine.current.slice(cursorPosition.current);
               cursorPosition.current--;
 
-              // Update terminal display
               term.current.write("\b \b");
             }
             break;
 
-          case "\u0003": // Ctrl+C
+          case "\u0003":
             if (currentProcess.current) {
               currentProcess.current.kill();
               currentProcess.current = null;
@@ -246,7 +233,7 @@ const TerminalComponent = forwardRef<TerminalRef, TerminalProps>(
             writePrompt();
             break;
 
-          case "\u001b[A": // Up arrow
+          case "\u001b[A":
             if (commandHistory.current.length > 0) {
               if (historyIndex.current === -1) {
                 historyIndex.current = commandHistory.current.length - 1;
@@ -254,7 +241,6 @@ const TerminalComponent = forwardRef<TerminalRef, TerminalProps>(
                 historyIndex.current--;
               }
 
-              // Clear current line and write history command
               const historyCommand =
                 commandHistory.current[historyIndex.current];
               term.current.write(
@@ -266,7 +252,7 @@ const TerminalComponent = forwardRef<TerminalRef, TerminalProps>(
             }
             break;
 
-          case "\u001b[B": // Down arrow
+          case "\u001b[B":
             if (historyIndex.current !== -1) {
               if (historyIndex.current < commandHistory.current.length - 1) {
                 historyIndex.current++;
@@ -290,7 +276,6 @@ const TerminalComponent = forwardRef<TerminalRef, TerminalProps>(
             break;
 
           default:
-            // Regular character input
             if (data >= " " || data === "\t") {
               currentLine.current =
                 currentLine.current.slice(0, cursorPosition.current) +
@@ -306,11 +291,9 @@ const TerminalComponent = forwardRef<TerminalRef, TerminalProps>(
     );
 
     const initXterm = useCallback(() => {
-      // Prevent double init
       if (!terminalRef.current || term.current || initializedRef.current)
         return;
 
-      // Only initialize if we have dimensions (prevents crash)
       if (
         terminalRef.current.clientWidth === 0 ||
         terminalRef.current.clientHeight === 0
@@ -488,7 +471,6 @@ const TerminalComponent = forwardRef<TerminalRef, TerminalProps>(
           className,
         )}
       >
-        {/* Terminal Header */}
         <div className="flex items-center justify-between px-3 py-2 border-b bg-muted/50">
           <div className="flex items-center gap-2">
             <div className="flex gap-1">
@@ -558,7 +540,6 @@ const TerminalComponent = forwardRef<TerminalRef, TerminalProps>(
           </div>
         </div>
 
-        {/* Terminal Content */}
         <div className="flex-1 relative">
           <div
             ref={terminalRef}

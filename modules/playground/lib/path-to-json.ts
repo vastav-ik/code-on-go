@@ -1,21 +1,18 @@
 import fs from "fs";
 import path from "path";
 
-// Represent a file in the template structure
 export interface TemplateFile {
   name: string;
   type: "file";
   content: string;
 }
 
-// Represent a folder in the template structure
 export interface TemplateFolder {
   folderName: string;
   type: "folder";
   items: (TemplateFile | TemplateFolder)[];
 }
 
-// Ensure output directory exists before writing
 const ensureDirectoryExists = (filePath: string) => {
   const dir = path.dirname(filePath);
   if (!fs.existsSync(dir)) {
@@ -23,12 +20,10 @@ const ensureDirectoryExists = (filePath: string) => {
   }
 };
 
-// Scan directory recursively
 export const scanTemplateDirectory = (
   dirPath: string,
-  ignoreFiles: string[] = []
+  ignoreFiles: string[] = [],
 ): (TemplateFile | TemplateFolder)[] => {
-  // Ensure the directory exists
   if (!fs.existsSync(dirPath)) {
     console.error(`Directory not found: ${dirPath}`);
     return [];
@@ -60,7 +55,6 @@ export const scanTemplateDirectory = (
   return structure;
 };
 
-// Main function to convert folder structure to JSON file
 export const saveTemplateStructureToJson = async (
   inputPath: string,
   outputPath: string,
@@ -70,7 +64,7 @@ export const saveTemplateStructureToJson = async (
     "dist",
     ".DS_Store",
     "package-lock.json",
-  ]
+  ],
 ) => {
   try {
     const templateStructure = scanTemplateDirectory(inputPath, ignoreFiles);
@@ -78,7 +72,7 @@ export const saveTemplateStructureToJson = async (
     fs.writeFileSync(
       outputPath,
       JSON.stringify(templateStructure, null, 2),
-      "utf-8"
+      "utf-8",
     );
     console.log(`JSON structure saved to ${outputPath}`);
   } catch (error) {
@@ -87,9 +81,8 @@ export const saveTemplateStructureToJson = async (
   }
 };
 
-// Function to read the saved JSON
 export const readTemplateFromJson = async (
-  jsonPath: string
+  jsonPath: string,
 ): Promise<(TemplateFile | TemplateFolder)[] | null> => {
   try {
     if (!fs.existsSync(jsonPath)) {

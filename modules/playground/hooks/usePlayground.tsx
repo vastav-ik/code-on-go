@@ -40,10 +40,8 @@ export const usePlayground = (id: string): UsePlaygroundReturn => {
       setIsLoading(true);
       setError(null);
 
-      // Fetch playground data
       const data = await getPlaygroundById(playgroundId);
 
-      // Handle explicit null from server action
       if (!data) {
         setError("Playground not found");
         toast.error("Playground not found");
@@ -147,6 +145,6 @@ export const usePlayground = (id: string): UsePlaygroundReturn => {
     isLoading,
     error,
     loadPlayground,
-    saveTemplateData: saveTemplateDataFn, // expose for manual saving
+    saveTemplateData: saveTemplateDataFn,
   };
 };

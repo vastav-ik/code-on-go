@@ -29,12 +29,10 @@ export const getPlaygroundById = async (id: string) => {
       return null;
     }
 
-    // Transform relation to null if missing or parse content if present
-    // But for raw return, we just return the object.
     return playground;
   } catch (error) {
     console.error("Error fetching playground:", JSON.stringify(error, null, 2));
-    throw error; // Throw so client catches it
+    throw error;
   }
 };
 
@@ -50,8 +48,6 @@ export const saveUpdatedCode = async (
 
     const content = JSON.stringify(data);
 
-    // Upsert the TemplateFile
-    // Use the relation to update based on playgroundId
     const updatedPlayground = await prisma.templateFile.upsert({
       where: {
         playgroundId: playgroundId,
