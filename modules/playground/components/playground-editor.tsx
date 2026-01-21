@@ -442,9 +442,10 @@ export const PlaygroundEditor = ({
         if (suggestionTimeoutRef.current) {
           clearTimeout(suggestionTimeoutRef.current);
         }
-        suggestionTimeoutRef.current = setTimeout(() => {
-          onTriggerSuggestion("completion", editor);
-        }, 2000);
+        // Manual trigger only (Ctrl+Space) to avoid rate limits
+        // suggestionTimeoutRef.current = setTimeout(() => {
+        //   onTriggerSuggestion("completion", editor);
+        // }, 2000);
       }
     });
 
@@ -482,14 +483,15 @@ export const PlaygroundEditor = ({
           change.text === ":" ||
           change.text === ";"
         ) {
-          if (!currentSuggestionRef.current && !suggestionLoading) {
-            if (suggestionTimeoutRef.current) {
-              clearTimeout(suggestionTimeoutRef.current);
-            }
-            suggestionTimeoutRef.current = setTimeout(() => {
-              onTriggerSuggestion("completion", editor);
-            }, 2000);
-          }
+          // Manual trigger only (Ctrl+Space) to avoid rate limits
+          // if (!currentSuggestionRef.current && !suggestionLoading) {
+          //   if (suggestionTimeoutRef.current) {
+          //     clearTimeout(suggestionTimeoutRef.current);
+          //   }
+          //   suggestionTimeoutRef.current = setTimeout(() => {
+          //     onTriggerSuggestion("completion", editor);
+          //   }, 2000);
+          // }
         }
       }
     });
