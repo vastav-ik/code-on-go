@@ -444,7 +444,7 @@ export const PlaygroundEditor = ({
         }
         suggestionTimeoutRef.current = setTimeout(() => {
           onTriggerSuggestion("completion", editor);
-        }, 300);
+        }, 2000);
       }
     });
 
@@ -490,7 +490,7 @@ export const PlaygroundEditor = ({
             ) {
               onTriggerSuggestion("completion", editor);
             }
-          }, 100);
+          }, 2000);
         }
       }
     });
