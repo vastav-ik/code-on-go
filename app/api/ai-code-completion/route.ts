@@ -129,7 +129,7 @@ async function generateSuggestion(prompt: string): Promise<string> {
       // "gemini-pro" does not support fill-in-the-middle natively, but we can approximate
       // or just ask it to complete the code.
       // For code completion, gemini-1.5-flash is fast.
-      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
       // Clean prompt for Gemini: Just ask it to complete the code pattern
       // FIM tokens might confuse it if not fine-tuned, so we might strip them or use a completion prompt.
