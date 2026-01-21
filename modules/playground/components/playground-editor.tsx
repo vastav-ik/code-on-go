@@ -482,15 +482,14 @@ export const PlaygroundEditor = ({
           change.text === ":" ||
           change.text === ";"
         ) {
-          setTimeout(() => {
-            if (
-              editorRef.current &&
-              !currentSuggestionRef.current &&
-              !suggestionLoading
-            ) {
-              onTriggerSuggestion("completion", editor);
+          if (!currentSuggestionRef.current && !suggestionLoading) {
+            if (suggestionTimeoutRef.current) {
+              clearTimeout(suggestionTimeoutRef.current);
             }
-          }, 2000);
+            suggestionTimeoutRef.current = setTimeout(() => {
+              onTriggerSuggestion("completion", editor);
+            }, 2000);
+          }
         }
       }
     });
