@@ -119,40 +119,64 @@ function buildPrompt(context: CodeContext, suggestionType: string): string {
 }
 
 async function generateSuggestion(prompt: string): Promise<string> {
-  // Check for Gemini Provider
-  const shouldUseGemini =
-    process.env.AI_PROVIDER === "gemini" || !!process.env.GEMINI_API_KEY;
+  const aiProvider = process.env.AI_PROVIDER || "ollama";
 
-  if (shouldUseGemini && process.env.GEMINI_API_KEY) {
+  // Groq Implementation (Default/Preferred for Speed)
+  if (aiProvider === "groq" && process.env.GROQ_API_KEY) {
+    try {
+      const Groq = require("groq-sdk");
+      const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+
+      const chatCompletion = await groq.chat.completions.create({
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are a code completion AI. Output ONLY the code to complete the prompt. No markdown, no explanations, no conversational text.",
+          },
+          {
+            role: "user",
+            content: prompt,
+          },
+        ],
+        model: "llama-3.1-8b-instant",
+        temperature: 0.1,
+        max_tokens: 128,
+        stop: ["\n\n", "```", "<|eot_id|>"],
+      });
+
+      let suggestion = chatCompletion.choices[0]?.message?.content || "";
+
+      // Cleanup markdown if present
+      suggestion = suggestion.replace(/^```[\w]*\n/, "").replace(/```$/, "");
+
+      return suggestion;
+    } catch (error) {
+      console.error("Groq API Error:", error);
+      return "// AI suggestion unavailable (Groq Error)";
+    }
+  }
+
+  // Legacy Gemini Provider
+  if (aiProvider === "gemini" && process.env.GEMINI_API_KEY) {
     try {
       const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-      // "gemini-pro" does not support fill-in-the-middle natively, but we can approximate
-      // or just ask it to complete the code.
-      // For code completion, gemini-1.5-flash is fast.
       const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
-      // Clean prompt for Gemini: Just ask it to complete the code pattern
-      // FIM tokens might confuse it if not fine-tuned, so we might strip them or use a completion prompt.
-      // Simple translation for now:
       const cleanPrompt = prompt
         .replace(/<fim_prefix>/g, "")
         .replace(/<fim_suffix>/g, "[CURSOR]")
         .replace(/<fim_middle>/g, "");
 
-      const parts = cleanPrompt.split("[CURSOR]");
-      const before = parts[0] || "";
-      const after = parts[1] || "";
-
       const completionPrompt = `You are a code completion engine. COMPLETE the code at the [CURSOR] location.
 DO NOT repeat the existing code. output ONLY the missing code.
 Code context:
-${before}[CURSOR]${after}`;
+${cleanPrompt}`;
 
       const result = await model.generateContent(completionPrompt);
       const response = result.response;
       let text = response.text();
 
-      // Cleanup markdown if gemini adds it
       if (text.startsWith("```")) {
         const match = text.match(/```[\w]*\n?([\s\S]*?)```/);
         text = match ? match[1] : text;
@@ -161,9 +185,7 @@ ${before}[CURSOR]${after}`;
       return text.trim();
     } catch (error) {
       console.error("Gemini Completion Error:", error);
-      const errorMessage =
-        error instanceof Error ? error.message : "Unknown error";
-      return `// AI suggestion unavailable: ${errorMessage}`;
+      return "// AI suggestion unavailable (Gemini Error)";
     }
   }
 
@@ -174,7 +196,7 @@ ${before}[CURSOR]${after}`;
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         model: DEFAULT_MODEL,
-        prompt, // Starcoder expects FIM format directly
+        prompt,
         stream: false,
         options: {
           temperature: 0.2,
@@ -189,9 +211,7 @@ ${before}[CURSOR]${after}`;
     }
 
     const data = await response.json();
-    console.log("DEBUG: Raw AI Response:", JSON.stringify(data));
     let suggestion = data.response;
-    console.log("DEBUG: Extracted Suggestion:", suggestion);
 
     suggestion = suggestion.replace(
       /<file_sep>|<fim_prefix>|<fim_suffix>|<fim_middle>/g,

@@ -24,21 +24,38 @@ async function generateAIResponse(
   messages: ChatMessage[],
   model: string = "starcoder2:3b",
 ): Promise<string> {
-  // Check for Gemini Provider
-  const shouldUseGemini =
-    process.env.AI_PROVIDER === "gemini" || !!process.env.GEMINI_API_KEY;
+  const aiProvider = process.env.AI_PROVIDER || "ollama";
 
-  if (shouldUseGemini && process.env.GEMINI_API_KEY) {
+  // Groq Implementation (High Performance Chat)
+  if (aiProvider === "groq" && process.env.GROQ_API_KEY) {
+    try {
+      const Groq = require("groq-sdk");
+      const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+
+      const chatCompletion = await groq.chat.completions.create({
+        messages: [{ role: "system", content: SYSTEM_PROMPT }, ...messages],
+        model: "llama-3.3-70b-versatile",
+        temperature: 0.7,
+        max_tokens: 1024,
+      });
+
+      return (
+        chatCompletion.choices[0]?.message?.content || "No response from Groq."
+      );
+    } catch (error) {
+      console.error("Groq Chat Error:", error);
+      throw new Error("Groq API failed. Check API configuration.");
+    }
+  }
+
+  // Gemini Implementation
+  if (aiProvider === "gemini" && process.env.GEMINI_API_KEY) {
     try {
       const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-      // Use "gemini-pro" or "gemini-1.5-flash" as a robust default for free tier
       const geminiModel = genAI.getGenerativeModel({
         model: "gemini-2.0-flash",
       });
 
-      // Convert history to Gemini format (user/model roles)
-      // Gemini expects: { role: 'user' | 'model', parts: [{ text: string }] }
-      // Our history is: { role: 'user' | 'assistant', content: string }
       const historyForGemini = messages.slice(0, -1).map((msg) => ({
         role: msg.role === "user" ? "user" : "model",
         parts: [{ text: msg.content }],
@@ -54,11 +71,7 @@ async function generateAIResponse(
           },
           {
             role: "model",
-            parts: [
-              {
-                text: "Understood. I am ready to assist as a coding assistant.",
-              },
-            ],
+            parts: [{ text: "Understood. I am ready to assist." }],
           },
           ...historyForGemini,
         ],
@@ -69,15 +82,11 @@ async function generateAIResponse(
       return response.text();
     } catch (error) {
       console.error("Gemini API Error:", error);
-      // Fallback to Ollama or throw? For now throw to indicate misconfiguration
-      throw new Error(
-        `Gemini API failed: ${error instanceof Error ? error.message : "Unknown error"}`,
-      );
+      throw new Error("Gemini API failed.");
     }
   }
 
   // Default: Local Ollama
-  // Prep messages with System Prompt for Ollama
   const fullMessages = [
     { role: "system", content: SYSTEM_PROMPT },
     ...messages,
@@ -90,9 +99,7 @@ async function generateAIResponse(
   try {
     const response = await fetch("http://localhost:11434/api/generate", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         model: model,
         prompt: prompt,
@@ -106,15 +113,11 @@ async function generateAIResponse(
     });
 
     const data = await response.json();
-
-    if (!data.response) {
-      throw new Error("No response from AI model");
-    }
-
+    if (!data.response) throw new Error("No response from Ollama");
     return data.response.trim();
   } catch (error) {
-    console.error("AI generation error:", error);
-    throw new Error("Failed to generate AI response");
+    console.error("Ollama Error:", error);
+    throw new Error("Failed to generate AI response from Ollama");
   }
 }
 
