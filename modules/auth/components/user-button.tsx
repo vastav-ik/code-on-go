@@ -17,6 +17,27 @@ import { useCurrentUser } from "../hooks/use-current-user";
 const UserButton = () => {
   const user = useCurrentUser();
 
+  if (!user) {
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger>
+          <div
+            className={cn(
+              "relative rounded-full bg-zinc-100 dark:bg-zinc-800 p-2",
+            )}
+          >
+            <User className="h-5 w-5" />
+          </div>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="mr-4">
+          <DropdownMenuItem asChild>
+            <a href="/sign-in">Sign In</a>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger>

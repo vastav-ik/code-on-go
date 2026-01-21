@@ -45,13 +45,13 @@ export function Header() {
                   <span className="text-zinc-300 dark:text-zinc-700">|</span>
                   {/* Desktop Navigation Links */}
                   <div className="hidden sm:flex items-center gap-6">
-                    <Link
+                    {/* <Link
                       href="/docs/components/background-paths"
                       className="text-sm font-medium font-mono text-zinc-600 hover:text-black dark:text-zinc-400 dark:hover:text-white transition-colors relative group"
                     >
                       <span className="relative z-10">Docs</span>
                       <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-green-500 group-hover:w-full transition-all duration-300" />
-                    </Link>
+                    </Link> */}
                     {/* <Link
                                             href="/pricing"
                                             className="text-sm font-medium font-mono text-zinc-600 hover:text-black dark:text-zinc-400 dark:hover:text-white transition-colors relative group"
@@ -82,12 +82,12 @@ export function Header() {
 
                 {/* Mobile Navigation remains unchanged */}
                 <div className="flex sm:hidden items-center gap-4">
-                  <Link
+                  {/* <Link
                     href="/docs/components/action-search-bar"
                     className="text-sm font-medium font-mono text-zinc-600 hover:text-black dark:text-zinc-400 dark:hover:text-white transition-colors"
                   >
                     Docs
-                  </Link>
+                  </Link> */}
                   <Link
                     href="/pricing"
                     className="text-sm font-medium font-mono text-zinc-600 hover:text-black dark:text-zinc-400 dark:hover:text-white transition-colors"
