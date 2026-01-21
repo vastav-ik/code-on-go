@@ -27,14 +27,14 @@ interface AppSidebarProps {
 
 export function AppSidebar({ playgrounds }: AppSidebarProps) {
   const starredPlaygrounds = playgrounds?.filter(
-    (pg) => pg.Starmark && pg.Starmark.some((sm) => sm.isMarked)
+    (pg) => pg.Starmark && pg.Starmark.some((sm) => sm.isMarked),
   );
 
   const recentPlaygrounds = playgrounds
     ? [...playgrounds]
         .sort(
           (a, b) =>
-            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
         )
         .slice(0, 5)
     : [];
@@ -81,7 +81,7 @@ export function AppSidebar({ playgrounds }: AppSidebarProps) {
                   return (
                     <SidebarMenuItem key={playground.id}>
                       <SidebarMenuButton asChild>
-                        <Link href={`/editor/${playground.id}`}>
+                        <Link href={`/playground/${playground.id}`}>
                           <Icon className="h-4 w-4" />
                           <span>{playground.title}</span>
                         </Link>
@@ -104,7 +104,7 @@ export function AppSidebar({ playgrounds }: AppSidebarProps) {
                   return (
                     <SidebarMenuItem key={playground.id}>
                       <SidebarMenuButton asChild>
-                        <Link href={`/editor/${playground.id}`}>
+                        <Link href={`/playground/${playground.id}`}>
                           <Icon className="h-4 w-4" />
                           <span>{playground.title}</span>
                         </Link>
@@ -132,7 +132,7 @@ export function AppSidebar({ playgrounds }: AppSidebarProps) {
                     return (
                       <SidebarMenuItem key={playground.id}>
                         <SidebarMenuButton asChild>
-                          <Link href={`/editor/${playground.id}`}>
+                          <Link href={`/playground/${playground.id}`}>
                             <Icon className="h-4 w-4" />
                             <span>{playground.title}</span>
                           </Link>
