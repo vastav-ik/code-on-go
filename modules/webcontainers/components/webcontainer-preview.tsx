@@ -126,7 +126,7 @@ const WebContainerPreview = ({
         const pkgNode = files["package.json"];
         let isInvalidPkg = !pkgNode;
 
-        if (pkgNode && "file" in pkgNode) {
+        if (pkgNode && "file" in pkgNode && "contents" in pkgNode.file) {
           const content = pkgNode.file.contents;
           if (
             !content ||
