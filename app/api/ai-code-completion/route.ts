@@ -161,7 +161,9 @@ ${before}[CURSOR]${after}`;
       return text.trim();
     } catch (error) {
       console.error("Gemini Completion Error:", error);
-      return "// AI suggestion unavailable (API Error)";
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      return `// AI suggestion unavailable: ${errorMessage}`;
     }
   }
 
